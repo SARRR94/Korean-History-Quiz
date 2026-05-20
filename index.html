@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한능검 OX 퀴즈</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("hangeom-ox-theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="bg-pattern" aria-hidden="true"></div>
+
+  <main class="app">
+  <header class="header">
+    <div class="header-row">
+      <div class="logo">
+        <span class="logo-icon">史</span>
+        <div>
+          <h1>한능검 OX 퀴즈</h1>
+          <p class="subtitle">한국사능력검정시험 핵심 개념 점검</p>
+        </div>
+      </div>
+      <button type="button" id="btn-theme" class="btn-theme" aria-label="라이트 모드로 변경" title="라이트 모드">
+        <span class="theme-icon" id="theme-icon" aria-hidden="true">☀️</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 시작 화면 -->
+  <section id="screen-start" class="screen active">
+    <div class="card welcome-card">
+      <h2>학습을 시작하세요</h2>
+      <p>한국사 핵심 사실을 O/X로 빠르게 확인합니다. 별 아이콘으로 내 문제집에 저장해 복습할 수 있습니다.</p>
+
+      <div class="filter-group">
+        <label for="source-select">문항 범위</label>
+        <select id="source-select">
+          <option value="all">전체 문항</option>
+          <option value="mybook">내 문제집</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="category-select">시대·분야</label>
+        <select id="category-select">
+          <option value="all">전체</option>
+          <option value="prehistoric">선사·고대</option>
+          <option value="medieval">중세 (고려)</option>
+          <option value="early-modern">근세 (조선)</option>
+          <option value="modern">근·현대</option>
+          <option value="culture">문화·사상</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="count-select">문항 수</label>
+        <select id="count-select">
+          <option value="10">10문항</option>
+          <option value="20">20문항</option>
+          <option value="30" selected>30문항</option>
+        </select>
+      </div>
+
+      <button type="button" id="btn-start" class="btn btn-primary">퀴즈 시작</button>
+    </div>
+
+    <div class="stats-preview">
+      <div class="stat-item">
+        <span class="stat-num" id="total-questions">30</span>
+        <span class="stat-label">등록 문항</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="bookmark-count">0</span>
+        <span class="stat-label">내 문제집</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="best-score">—</span>
+        <span class="stat-label">최고 점수</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 퀴즈 화면 -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-header">
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="quiz-meta">
+        <button
+          type="button"
+          id="btn-prev-question"
+          class="btn-prev-quiz"
+          disabled
+          aria-label="이전 문제"
+          title="이미 풀었던 문제로 이동 (←)"
+        >
+          ← 이전
+        </button>
+        <span id="question-counter">1 / 10</span>
+        <span id="category-badge" class="badge"></span>
+        <span id="score-live" class="score-live">0점</span>
+      </div>
+    </div>
+
+    <div class="card quiz-card">
+      <div class="question-head">
+        <p id="question-text" class="question-text"></p>
+        <button
+          type="button"
+          id="btn-bookmark"
+          class="btn-bookmark"
+          aria-label="내 문제집에 추가"
+          title="내 문제집에 추가"
+        >
+          <span class="star-icon" id="star-icon" aria-hidden="true">☆</span>
+        </button>
+      </div>
+
+      <div class="ox-buttons" id="ox-buttons">
+        <button type="button" class="btn-ox btn-o" data-answer="true" aria-label="O 맞음">
+          <span class="ox-symbol">〇</span>
+          <span class="ox-label">맞다</span>
+        </button>
+        <button type="button" class="btn-ox btn-x" data-answer="false" aria-label="X 틀림">
+          <span class="ox-symbol">✕</span>
+          <span class="ox-label">틀리다</span>
+        </button>
+      </div>
+
+      <div id="feedback" class="feedback hidden" role="status">
+        <div class="feedback-header">
+          <span id="feedback-icon" class="feedback-icon"></span>
+          <span id="feedback-title"></span>
+        </div>
+        <p id="feedback-explanation" class="feedback-explanation"></p>
+        <div class="feedback-actions">
+          <button type="button" id="btn-next" class="btn btn-secondary">다음 문제</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 결과 화면 -->
+  <section id="screen-result" class="screen">
+    <div class="card result-card">
+      <div id="result-emoji" class="result-emoji" aria-hidden="true">🎉</div>
+      <h2 id="result-title">수고하셨습니다!</h2>
+      <p id="result-message" class="result-message"></p>
+
+      <div class="score-circle">
+        <svg viewBox="0 0 120 120" class="score-ring">
+          <circle class="ring-bg" cx="60" cy="60" r="52" />
+          <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="score-inner">
+          <span id="final-score" class="final-score">0</span>
+          <span class="final-total">/ <span id="final-total">10</span></span>
+        </div>
+      </div>
+
+      <div class="result-stats">
+        <div class="result-stat correct">
+          <span class="result-stat-num" id="stat-correct">0</span>
+          <span>정답</span>
+        </div>
+        <div class="result-stat wrong">
+          <span class="result-stat-num" id="stat-wrong">0</span>
+          <span>오답</span>
+        </div>
+        <div class="result-stat percent">
+          <span class="result-stat-num" id="stat-percent">0%</span>
+          <span>정답률</span>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button type="button" id="btn-retry-wrong" class="btn btn-secondary hidden">틀린 문제만 다시</button>
+        <button type="button" id="btn-restart" class="btn btn-primary">다시 풀기</button>
+        <button type="button" id="btn-home" class="btn btn-ghost">처음으로</button>
+      </div>
+    </div>
+
+    <div id="wrong-review" class="wrong-review hidden">
+      <h3>오답 노트</h3>
+      <ul id="wrong-list" class="wrong-list"></ul>
+    </div>
+  </section>
+  </main>
+
+  <footer class="footer">
+    <p>한국사능력검정시험 학습용 · 정답은 교재·강의와 함께 확인하세요</p>
+  </footer>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
